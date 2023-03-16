@@ -9,7 +9,7 @@ class Student:
         self.current_courses = []
         self.marks = {}
 
-#  реализация возможности выставления оценок лектору        
+#  реализация возможности выставления оценок лектору:        
     def take_mark(self, lecturer, course, mark):
         if isinstance(lecturer, Lecturer) and course in lecturer.course_attached and course in self.current_courses:
             if course in lecturer.marks:
@@ -29,6 +29,12 @@ class Student:
         if not len(self.marks) == 0:
             average_mark = res / len(self.marks)
         return average_mark
+
+#  Метод, позволяющий сравнивать студентов друг с другом по успеваемости:
+    def __lt__(self, other):
+        if not isinstance(other, Student):
+            return 'Ошибка, нет такого студента'
+        return self.get_average() < other.get_average()
 
 # изменение вывода магического метода __str__   
     def __str__(self):
@@ -52,6 +58,12 @@ class Lecturer(Mentor):
     def __str__(self):
         res = f"Преподаватель\nИмя: {self.name}\nФамилия: {self.surname}\nСредняя оценка за лекции: {Student.get_average(self)}"
         return res
+
+#  Метод, позволяющий сравнивать лекторов друг с другом по оценке:
+    def __lt__(self, other):
+        if not isinstance(other, Lecturer):
+            return 'Ошибка, нет такого преподавателя'
+        return Student.get_average(self) < Student.get_average(other)
 
 
 class Reviewer(Mentor):
@@ -97,8 +109,8 @@ def overal_average_mark_lect(course, lecturers_list):
 
 #      Для упрощения, примем, что:
 #        - всего в базе два студента (у каждого по 2 курса в процессе изучения и один завершенный)
-#        - всего в базе два преподавателя, лектор и ревьюер (пусть оба преподают и проверяют на всех курсах)
-#        - студент №1 поставил оценки 10, 9 за первый курс и 7, 8 за ивторой, а также получил за дз оценки 10, 9 за первый курс  и 9, 8 за второй
+#        - всего в базе три преподавателя, два лектора и ревьюер 
+#        - студент №1 поставил оценки 10, 9 первому лектору и 10, 10 второму лектору за первый курс, 7, 8 за второй курс, а также получил за дз оценки 10, 9 за первый курс  и 9, 8 за второй
 #        - студент №2 не ставил оценки, но получил 8 и 7 за свой первый  курс и 10 за второй
 
 #  Назначаем студентов:
@@ -115,6 +127,8 @@ olga.finished_courses += ['English']
 oleg = Lecturer('Oleg', 'Bulygin')
 oleg.course_attached += ['Git']
 oleg.course_attached += ['Python']
+super_oleg = Lecturer('Super_Oleg', 'Super_Bulygin')
+super_oleg.course_attached += ['Python']
 alena = Reviewer('Alena', 'Batitskaya')
 alena.course_attached += ['Git']
 alena.course_attached += ['Python']
@@ -124,6 +138,9 @@ maksim.take_mark(oleg, 'Git', 10)
 maksim.take_mark(oleg, 'Git', 9)
 maksim.take_mark(oleg, 'Python', 7)
 maksim.take_mark(oleg, 'Python', 8)
+
+maksim.take_mark(super_oleg, 'Python', 10)
+maksim.take_mark(super_oleg, 'Python', 10)
 
 #  Выставляем оценки студентам:
 alena.take_marks(maksim, 'Git', 10)
@@ -141,8 +158,14 @@ print(olga)
 print()
 print(oleg)
 print()
+print(super_oleg)
+print()
 print(alena)
 print()
+
+#  Сравнение студентов:
+print(maksim < olga)
+print(super_oleg > oleg)
 
 #  средний балл студентов по курсу:
 print(overal_average_mark_stud('Git', [maksim, olga]))
@@ -150,7 +173,7 @@ print(overal_average_mark_stud('Python', [maksim, olga]))
 
 #  средняя оценка лекторов по курсу::
 print(overal_average_mark_lect('Git', [oleg]))
-print(overal_average_mark_lect('Python', [oleg]))
+print(overal_average_mark_lect('Python', [oleg, super_oleg]))
 print(overal_average_mark_lect('Git', [alena]))
 
 # End
